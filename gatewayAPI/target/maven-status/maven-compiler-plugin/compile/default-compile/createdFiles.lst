@@ -1,0 +1,7 @@
+org\example\gatewayAPI\configs\GatewayConfig.class
+org\example\gatewayAPI\filters\AuthFilter$Config.class
+org\example\gatewayAPI\filters\AuthFilter.class
+org\example\gatewayAPI\exceptions\GlobalExceptionHandler.class
+org\example\gatewayAPI\GatewayApplication.class
+org\example\gatewayAPI\configs\SecurityConfig.class
+org\example\gatewayAPI\controllers\FallbackController.class

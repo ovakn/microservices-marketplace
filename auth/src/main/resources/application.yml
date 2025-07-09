@@ -1,0 +1,28 @@
+server:
+  port: 8083
+  include-message: always
+  error:
+    include-message: always
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+
+spring:
+  application:
+    name: authServiceApplication
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  secret-key: "iCCWdLCs9HtrImr3wJLzjXv86sYwpdky"
+  access-token-expiration: 900000

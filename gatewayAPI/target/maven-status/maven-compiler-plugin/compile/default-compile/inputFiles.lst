@@ -1,0 +1,6 @@
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\configs\GatewayConfig.java
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\configs\SecurityConfig.java
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\controllers\FallbackController.java
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\exceptions\GlobalExceptionHandler.java
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\filters\AuthFilter.java
+D:\IDEA\IntelliJ IDEA Community Edition 2023.3.2\projects\microservices-marketplace\gatewayAPI\src\main\java\org\example\gatewayAPI\GatewayApplication.java
