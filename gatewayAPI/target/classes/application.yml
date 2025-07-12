@@ -22,32 +22,24 @@ spring:
         wiretap: true
         ssl:
           useInsecureTrustManager: true
+      default-filters:
+        - StripPrefix=1
+        - name: LoggingFilter
       routes:
         - id: product-service
           uri: http://localhost:8081
           predicates:
             - Path=/api/products/**
           filters:
-            - StripPrefix=1
-            - name: AuthFilter
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.replenishRate: 20
 
         - id: order-service
           uri: http://localhost:8082
           predicates:
             - Path=/api/orders/**
           filters:
-            - StripPrefix=1
-            - name: AuthFilter
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 10
-
-        - id: auth-service
-          uri: http://localhost:8083
-          predicates:
-            - Path=/auth/**
-          filters:
-            - StripPrefix=1
+                redis-rate-limiter.replenishRate: 20

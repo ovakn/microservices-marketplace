@@ -1,6 +1,5 @@
 package org.example.gatewayAPI.configs;
 
-import org.example.gatewayAPI.filters.AuthFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +12,8 @@ public class GatewayConfig {
         return builder
                 .routes()
                 .route("product-service", r -> r
-                        .path("/api/products/**")
-                        .filters(f -> f.stripPrefix(1))
-                        .uri("http://localhost:8081")
+                        .path("/products/**")
+                        .uri("http://product-service:8081")
                 )
                 .route("order-service", r -> r
                         .path("/api/orders/**")
@@ -27,11 +25,6 @@ public class GatewayConfig {
                                 )
                         )
                         .uri("http://localhost:8082")
-                )
-                .route("auth-service", r -> r
-                        .path("api/auth/**")
-                        .filters(f -> f.stripPrefix(1))
-                        .uri("http:localhost:8083")
                 )
                 .build();
     }

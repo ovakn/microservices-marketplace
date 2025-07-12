@@ -1,37 +1,51 @@
-version: '3.8'
+networks:
+  my-network:
+    driver: bridge
+
 services:
   gateway-service:
-    image: gateway
+    image: gateway:1.0.23
+    container_name: gateway-service
     build:
       context: /gatewayAPI
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+    networks:
+      - my-network
 
-  auth-service:
-    image: auth
+  product-service:
+    image: product-service:1.0.8
+    container_name: product-service
     build:
-      context: /auth
+      context: /product-service
       dockerfile: Dockerfile
     ports:
-      - "8083:8083"
+      - "8081:8081"
     depends_on:
-      - auth_database
+      - product-database
     environment:
-      - SERVER_PORT=8083
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth_database/auth_db
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-database/product_db
+    networks:
+      - my-network
 
-  auth_database:
+  product-database:
     image: postgres:bullseye
+    container_name: product-database
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: auth_db
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: product_db
     volumes:
-      - auth_db-data:/var/auth_postgresql/data
+      - product_db-data:/var/product_postgresql/data
     restart: unless-stopped
+    networks:
+      - my-network
 
 volumes:
-  auth_db-data:
+  product_db-data:
