@@ -4,7 +4,7 @@ networks:
 
 services:
   gateway-service:
-    image: gateway:1.0.23
+    image: gateway:1.0.24
     container_name: gateway-service
     build:
       context: /gatewayAPI
@@ -17,7 +17,7 @@ services:
       - my-network
 
   product-service:
-    image: product-service:1.0.8
+    image: product-service:1.0.25
     container_name: product-service
     build:
       context: /product-service
@@ -26,6 +26,7 @@ services:
       - "8081:8081"
     depends_on:
       - product-database
+      - product-cache
     environment:
       - SERVER_PORT=8081
       - SPRING_DATASOURCE_URL=jdbc:postgresql://product-database/product_db
@@ -43,7 +44,16 @@ services:
       POSTGRES_DB: product_db
     volumes:
       - product_db-data:/var/product_postgresql/data
-    restart: unless-stopped
+    restart: always
+    networks:
+      - my-network
+
+  product-cache:
+    image: redis:8
+    container_name: product-cache
+    ports:
+      - "6379:6379"
+    restart: always
     networks:
       - my-network
 

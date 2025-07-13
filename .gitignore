@@ -1,9 +1,5 @@
-/shelf/
-/workspace.xml
-/.idea/
+/.idea/workspace.xml
 HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 .apt_generated
@@ -16,3 +12,6 @@ target/
 *.iws
 *.iml
 *.ipr
+/gatewayAPI/.mvn/
+/gatewayAPI/target/
+/product-service/.mvn/

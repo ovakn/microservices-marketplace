@@ -1,4 +1,19 @@
 package org.example.productService.DTOs;
 
-public record ProductDTO(String name, Double price, Integer stock) {
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class ProductDTO {
+    @NotNull
+    String name;
+    @Min(value = 0,
+            message = "Product price must be positive")
+    @NotNull
+    Double price;
+    @NotNull
+    Integer stock;
 }

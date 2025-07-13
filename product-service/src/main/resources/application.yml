@@ -6,6 +6,7 @@ logging:
     org:
       springframework:
         web: DEBUG
+        cache: DEBUG
 
 spring:
   datasource:
@@ -18,3 +19,13 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  cache:
+    redis:
+      time-to-live: 1800000
+  data:
+    redis:
+      host: product-cache
+      port: 6379
+      timeout: 2000
+      repositories:
+        enabled: false
