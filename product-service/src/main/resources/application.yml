@@ -19,6 +19,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
   cache:
     redis:
       time-to-live: 1800000

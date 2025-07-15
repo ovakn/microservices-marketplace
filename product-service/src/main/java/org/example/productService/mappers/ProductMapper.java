@@ -1,25 +1,31 @@
 package org.example.productService.mappers;
 
-import org.example.productService.DTOs.ProductDTO;
+import org.example.productService.DTOs.ProductRequest;
+import org.example.productService.DTOs.ProductResponse;
 import org.example.productService.entities.Product;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductMapper {
-    public ProductDTO toDTO(Product product) {
-        return new ProductDTO(
+    public ProductResponse toDTO(Product product) {
+        return new ProductResponse(
+                product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getStock()
+                product.getStock(),
+                null,
+                null
         );
     }
 
-    public Product toProduct(ProductDTO productDTO) {
+    public Product toProduct(ProductRequest productRequest) {
         return new Product(
                 null,
-                productDTO.getName(),
-                productDTO.getPrice(),
-                productDTO.getStock()
+                productRequest.getName(),
+                productRequest.getPrice(),
+                productRequest.getStock(),
+                null,
+                null
         );
     }
 }

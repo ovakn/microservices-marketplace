@@ -4,75 +4,121 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.example.productService.DTOs.ProductDTO;
-import org.example.productService.entities.Product;
-import org.example.productService.mappers.ProductMapper;
-import org.example.productService.repositories.ProductRepository;
-import org.springframework.cache.annotation.CacheConfig;
+import org.example.productService.DTOs.*;
+import org.example.productService.entities.*;
+import org.example.productService.mappers.*;
+import org.example.productService.repositories.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Collectors;
 
 @Service
-@CacheConfig(cacheNames = "products")
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE,
         makeFinal = true)
 public class ProductService {
     ProductRepository productRepository;
+    ReviewRepository reviewRepository;
     ProductMapper productMapper;
+    ReviewMapper reviewMapper;
 
-    @Cacheable(value = "products")
-    public Slice<Product> getProductsSlice(
+    @Cacheable("products")
+    public Slice<ProductResponse> getProductsSlice(
             Integer limit,
             Integer offset
     ) {
-        log.info("getting page {} with size {}", offset, limit);
-        return productRepository.findAll(PageRequest.of(offset, limit));
+        log.info("getting products page {} with size {}", offset, limit);
+        Slice<Product> products = productRepository.findAll(PageRequest.of(offset, limit));
+        return products.map(product -> {
+            ProductResponse productResponse = productMapper.toDTO(product);
+            productResponse.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
+            productResponse.setReviews(product
+                    .getReviews().stream()
+                    .map(reviewMapper::toDTO).collect(Collectors.toList())
+            );
+            return productResponse;
+        });
     }
 
-    @Cacheable
-    public Product getProductByName(String name) {
+    @Cacheable("reviews")
+    public Slice<ReviewResponse> getProductReviewsSlice(
+            Long productId,
+            Integer limit,
+            Integer offset
+    ) {
+        log.info("getting reviews about product with id {}, page {} with size {}", productId, offset, limit);
+        return reviewRepository.findByProductId(productId, PageRequest.of(offset, limit)).map(reviewMapper::toDTO);
+    }
+
+    @Cacheable("products")
+    public ProductResponse getProductByName(String name) {
         log.info("getting product with name: " + name);
-        return productRepository.findByName(name).orElseThrow(
+        Product product = productRepository.findByName(name).orElseThrow(
                 () -> new IllegalArgumentException("Product with such name does not exist")
         );
+        product.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
+        return productMapper.toDTO(product);
     }
 
-    @Cacheable
-    public Product getProductById(Long id) {
+    @Cacheable("products")
+    public ProductResponse getProductById(Long id) {
         log.info("getting product with id: " + id);
-        return productRepository.findById(id).orElseThrow(
+        Product product = productRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Product with such id does not exist")
         );
+        product.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
+        return productMapper.toDTO(product);
     }
 
-    @CachePut(key = "#product.name")
-    public Product createProduct(ProductDTO product) {
+    @CachePut(
+            value = "products",
+            key = "#product.name"
+    )
+    public ProductResponse createProduct(ProductRequest product) {
         log.info("creating product {}", product.toString());
-        return productRepository.save(productMapper.toProduct(product));
+        return productMapper.toDTO(productRepository.save(productMapper.toProduct(product)));
     }
 
-    @CacheEvict(key = "#product.name")
-    @CachePut(key = "#product.name")
-    public Product updateProduct(
-            ProductDTO product,
+    @Transactional
+    @CachePut("reviews")
+    public ReviewResponse createReview(Long productId, ReviewRequest reviewRequest) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new IllegalArgumentException("Product with such id does not exist")
+        );
+        Review review = reviewMapper.toReview(reviewRequest);
+        review.setProduct(product);
+        return reviewMapper.toDTO(reviewRepository.save(review));
+    }
+
+    @CachePut(
+            value = "products",
+            key = "#product.name"
+    )
+    @Transactional
+    public ProductResponse updateProduct(
+            ProductRequest product,
             Long id
     ) {
-        if (productRepository.findById(id).isPresent()) {
-            Product newProduct = productMapper.toProduct(product);
-            newProduct.setId(id);
-            log.info("updating product with id {}. New product: {}", id, product);
-            productRepository.save(newProduct);
-        }
-        throw new IllegalArgumentException("Product with such id does not exist");
+        Product oldProduct = productRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Product with such id does not exist")
+        );
+        oldProduct.setName(product.getName());
+        oldProduct.setPrice(product.getPrice());
+        oldProduct.setStock(product.getStock());
+        log.info("updating product with id {}. New product info: {}", id, product);
+        return productMapper.toDTO(oldProduct);
     }
 
-    @CacheEvict(key = "#product.name")
+    @CacheEvict(
+            value = "products",
+            key = "#product.name"
+    )
     public void deleteProduct(Long id) {
         log.info("deleting product with id {}", id);
         productRepository.deleteById(id);
