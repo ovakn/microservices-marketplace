@@ -1,7 +1,6 @@
 package org.example.productService.mappers;
 
-import org.example.productService.DTOs.ProductRequest;
-import org.example.productService.DTOs.ProductResponse;
+import org.example.productService.DTOs.*;
 import org.example.productService.entities.Product;
 import org.springframework.stereotype.Component;
 

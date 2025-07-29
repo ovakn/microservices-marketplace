@@ -42,7 +42,8 @@ public class Product implements Serializable {
     @Transient
     Double averageRating;
     @OneToMany(
-            mappedBy = "product", cascade = CascadeType.ALL
+            mappedBy = "product",
+            cascade = CascadeType.ALL
     )
     List<Review> reviews;
 }

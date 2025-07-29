@@ -12,19 +12,18 @@ public class GatewayConfig {
         return builder
                 .routes()
                 .route("product-service", r -> r
-                        .path("/products/**")
+                        .path("/api/v1/products/**")
                         .uri("http://product-service:8081")
                 )
                 .route("order-service", r -> r
-                        .path("/api/orders/**")
+                        .path("/api/v1/orders/**")
                         .filters(f -> f
-                                .stripPrefix(1)
                                 .circuitBreaker(config -> config
                                         .setName("orderCB")
                                         .setFallbackUri("forward:/fallback/order")
                                 )
                         )
-                        .uri("http://localhost:8082")
+                        .uri("http://order-service:8082")
                 )
                 .build();
     }

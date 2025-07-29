@@ -9,16 +9,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.productService.DTOs.*;
-import org.example.productService.entities.*;
 import org.example.productService.services.ProductService;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/v1/products")
 @Validated
 @Tag(
         name = "Контроллер продуктов",
@@ -46,11 +46,7 @@ public class ProductController {
             @Min(0)
             Integer offset
     ) {
-        try {
-            return ResponseEntity.ok(productService.getProductsSlice(limit, offset));
-        } catch (Exception e) {
-            return ResponseEntity.noContent().build();
-        }
+        return new ResponseEntity<>(productService.getProductsSlice(limit, offset), HttpStatus.OK);
     }
 
     @Operation(
@@ -61,7 +57,7 @@ public class ProductController {
     public ResponseEntity<Slice<ReviewResponse>> getProductReviewsSlice(
             @Parameter(description = "Идентификатор продукта", required = true)
             @PathVariable("id")
-            @Min(0)
+            @Min(1)
             Long id,
             @Parameter(description = "Количество элементов на одной странице")
             @RequestParam(value = "limit", defaultValue = "20")
@@ -72,11 +68,7 @@ public class ProductController {
             @Min(0)
             Integer offset
     ) {
-        try {
-            return ResponseEntity.ok(productService.getProductReviewsSlice(id, limit, offset));
-        } catch (Exception e) {
-            return ResponseEntity.noContent().build();
-        }
+        return new ResponseEntity<>(productService.getProductReviewsSlice(id, limit, offset), HttpStatus.OK);
     }
 
     @Operation(
@@ -87,13 +79,13 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductById(
             @Parameter(description = "Идентификатор продукта", required = true)
             @PathVariable("id")
-            @Min(0)
+            @Min(1)
             Long id
     ) {
         try {
-            return ResponseEntity.ok(productService.getProductById(id));
+            return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -106,9 +98,25 @@ public class ProductController {
             @Parameter(description = "Название продукта", required = true) @PathVariable("name") String name
     ) {
         try {
-            return ResponseEntity.ok(productService.getProductByName(name));
+            return new ResponseEntity<>(productService.getProductByName(name), HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(
+            summary = "Проверка наличия продукта",
+            description = "Проверяет наличие на складе"
+    )
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<Boolean> isAvailable(
+            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable("id") @Min(1) Long id,
+            @Parameter(description = "Количество продуктов", required = true) @RequestParam @Min(1) int quantity
+    ) {
+        try {
+            return new ResponseEntity<>(productService.getAvailability(id, quantity), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -124,9 +132,9 @@ public class ProductController {
             ProductRequest product
     ) {
         try {
-            return ResponseEntity.ok(productService.createProduct(product));
+            return new ResponseEntity<>(productService.createProduct(product), HttpStatus.CREATED);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -138,16 +146,16 @@ public class ProductController {
     public ResponseEntity<ReviewResponse> createReview(
             @Parameter(description = "Идентификатор продукта", required = true)
             @PathVariable("productId")
-            @Min(0)
+            @Min(1)
             Long productId,
             @Validated
             @RequestBody
             ReviewRequest reviewRequest
     ) {
         try {
-            return ResponseEntity.ok(productService.createReview(productId, reviewRequest));
+            return new ResponseEntity<>(productService.createReview(productId, reviewRequest), HttpStatus.CREATED);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -155,11 +163,11 @@ public class ProductController {
             summary = "Обновление продукта",
             description = "Обновляет информацию о продукте в базе данных"
     )
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}/update")
     public ResponseEntity<ProductResponse> updateProduct(
             @Parameter(description = "Идентификатор обновляемого продукта", required = true)
-            @PathVariable("id")
-            @Min(0)
+            @PathVariable(name = "id")
+            @Min(1)
             Long id,
             @Parameter(description = "Объект с обновлёнными данными о продукте", required = true)
             @Validated
@@ -167,9 +175,26 @@ public class ProductController {
             ProductRequest product
     ) {
         try {
-            return ResponseEntity.ok(productService.updateProduct(product, id));
+            return new ResponseEntity<>(productService.updateProduct(product, id), HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Operation(
+            summary = "Резервирование продукта",
+            description = "Уменьшает количество товара на складе на переданное количество"
+    )
+    @PutMapping("/{id}/reserve")
+    public ResponseEntity<Void> reserveProduct(
+            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable(name = "id") @Min(1) Long id,
+            @Parameter @RequestParam @Min(1) int quantity
+    ) {
+        try {
+            productService.reserveProduct(id, quantity);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -178,12 +203,13 @@ public class ProductController {
             description = "Удаляет продукт по id"
     )
     @DeleteMapping("/delete/{id}")
-    public void deleteProduct(
+    public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "Идентификатор удаляемого продукта", required = true)
             @PathVariable(name = "id")
-            @Min(0)
+            @Min(1)
             Long id
     ) {
         productService.deleteProduct(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.util.List;
 
 @Configuration
@@ -20,8 +19,8 @@ public class SwaggerConfig {
                 )
                 .info(
                         new Info()
-                                .title("Marketplace API")
-                                .description("API маркетплейса на микросервисной архитектуре")
+                                .title("Product Service API")
+                                .description("API микросервиса товаров")
                                 .version("1.0.0")
                 );
     }

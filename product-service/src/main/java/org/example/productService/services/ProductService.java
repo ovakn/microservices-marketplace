@@ -8,9 +8,7 @@ import org.example.productService.DTOs.*;
 import org.example.productService.entities.*;
 import org.example.productService.mappers.*;
 import org.example.productService.repositories.*;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -20,8 +18,10 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE,
-        makeFinal = true)
+@FieldDefaults(
+        level = AccessLevel.PRIVATE,
+        makeFinal = true
+)
 public class ProductService {
     ProductRepository productRepository;
     ReviewRepository reviewRepository;
@@ -46,7 +46,10 @@ public class ProductService {
         });
     }
 
-    @Cacheable("reviews")
+    @Cacheable(
+            value = "reviews",
+            key = "#productId"
+    )
     public Slice<ReviewResponse> getProductReviewsSlice(
             Long productId,
             Integer limit,
@@ -56,7 +59,10 @@ public class ProductService {
         return reviewRepository.findByProductId(productId, PageRequest.of(offset, limit)).map(reviewMapper::toDTO);
     }
 
-    @Cacheable("products")
+    @Cacheable(
+            value = "products",
+            key = "#name"
+    )
     public ProductResponse getProductByName(String name) {
         log.info("getting product with name: " + name);
         Product product = productRepository.findByName(name).orElseThrow(
@@ -66,7 +72,10 @@ public class ProductService {
         return productMapper.toDTO(product);
     }
 
-    @Cacheable("products")
+    @Cacheable(
+            value = "products",
+            key = "#id"
+    )
     public ProductResponse getProductById(Long id) {
         log.info("getting product with id: " + id);
         Product product = productRepository.findById(id).orElseThrow(
@@ -74,6 +83,14 @@ public class ProductService {
         );
         product.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
         return productMapper.toDTO(product);
+    }
+
+    public Boolean getAvailability(Long id, int quantity) {
+        log.info("checking availability of product with id: {}", id);
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Product with such id does not exist")
+        );
+        return product.getStock() >= quantity;
     }
 
     @CachePut(
@@ -85,9 +102,13 @@ public class ProductService {
         return productMapper.toDTO(productRepository.save(productMapper.toProduct(product)));
     }
 
+    @CachePut(
+            value = "reviews",
+            key = "#productId"
+    )
     @Transactional
-    @CachePut("reviews")
     public ReviewResponse createReview(Long productId, ReviewRequest reviewRequest) {
+        log.info("creating new review ({}) about a product with id {}", reviewRequest.toString(), productId);
         Product product = productRepository.findById(productId).orElseThrow(
                 () -> new IllegalArgumentException("Product with such id does not exist")
         );
@@ -98,7 +119,7 @@ public class ProductService {
 
     @CachePut(
             value = "products",
-            key = "#product.name"
+            key = "#id"
     )
     @Transactional
     public ProductResponse updateProduct(
@@ -115,9 +136,18 @@ public class ProductService {
         return productMapper.toDTO(oldProduct);
     }
 
+    @Transactional
+    public void reserveProduct(Long id, int quantity) {
+        log.info("reserving product with id: {}, with quantity {}", id, quantity);
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Product with such id does not exist")
+        );
+        product.setStock(product.getStock() - quantity);
+    }
+
     @CacheEvict(
             value = "products",
-            key = "#product.name"
+            key = "#id"
     )
     public void deleteProduct(Long id) {
         log.info("deleting product with id {}", id);
