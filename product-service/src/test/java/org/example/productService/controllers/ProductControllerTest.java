@@ -1,10 +1,7 @@
 package org.example.productService.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.productService.DTOs.ProductRequest;
-import org.example.productService.DTOs.ProductResponse;
-import org.example.productService.DTOs.ReviewRequest;
-import org.example.productService.DTOs.ReviewResponse;
+import org.example.productService.DTOs.*;
 import org.example.productService.services.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
 import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -89,12 +88,15 @@ class ProductControllerTest {
 
     @Test
     void isAvailable() throws Exception {
-        when(productService.getAvailability(1L, 3)).thenReturn(true);
+        List<ProductQuantityRequest> productsList = new ArrayList<>(List.of(new ProductQuantityRequest(1L, 2)));
+        when(productService.getAvailability(any())).thenReturn(true);
         mockMvc
-                .perform(get("/api/v1/products/{id}/availability", 1L).param("quantity", "3"))
+                .perform(get("/api/v1/products/availability", objectMapper.writeValueAsString(productsList))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productsList)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value("true"));
-        verify(productService, times(1)).getAvailability(1L, 3);
+        verify(productService, times(1)).getAvailability(any());
     }
 
     @Test

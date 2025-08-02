@@ -63,7 +63,8 @@ class OrderServiceTest {
                         new OrderItemRequest(12L, 3)
                 )
         );
-        when(productServiceClient.isProductAvailable(12L, 3)).thenReturn(true);
+        when(productServiceClient.isProductAvailable(any())).thenReturn(true);
+        when(productServiceClient.reserveProduct(any())).thenReturn(true);
         assertEquals(orderMapper.toDTO(orderMapper.toOrder(order)), orderService.createOrder(order));
     }
 
@@ -72,10 +73,10 @@ class OrderServiceTest {
         OrderRequest order = new OrderRequest(
                 194L,
                 List.of(
-                        new OrderItemRequest(13L, 3)
+                        new OrderItemRequest(12L, 3)
                 )
         );
-        when(productServiceClient.isProductAvailable(12L, 3)).thenReturn(true);
+        when(productServiceClient.isProductAvailable(any())).thenReturn(false);
         assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(order));
     }
 

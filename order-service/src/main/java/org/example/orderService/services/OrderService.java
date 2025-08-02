@@ -12,10 +12,7 @@ import org.example.orderService.mappers.OrderMapper;
 import org.example.orderService.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -87,11 +84,14 @@ public class OrderService {
     }
 
     private void reservingProducts(List<OrderItemRequest> itemsRequest) {
-        itemsRequest.forEach(item -> {
-            if (!productServiceClient.isProductAvailable(item.getProductId(), item.getQuantity())) {
-                throw new IllegalArgumentException("Product with id: " + item.getProductId() + " isn't available");
-            }
-        });
-        itemsRequest.forEach(item -> productServiceClient.reserveProduct(item.getProductId(), item.getQuantity()));
+        List<ProductQuantityRequest> productsList = itemsRequest
+                .stream()
+                .map(item -> new ProductQuantityRequest(item.getProductId(), item.getQuantity())).toList();
+        if (!productServiceClient.isProductAvailable(productsList)) {
+            throw new IllegalArgumentException("Error. Some of products isn't available");
+        }
+        if (!productServiceClient.reserveProduct(productsList)) {
+            throw new IllegalArgumentException("Error. Some of products isn't available");
+        }
     }
 }

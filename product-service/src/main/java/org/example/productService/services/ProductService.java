@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +30,10 @@ public class ProductService {
     ProductMapper productMapper;
     ReviewMapper reviewMapper;
 
-    @Cacheable("products")
+    @Cacheable(
+            value = "products",
+            key = "#limit, #offset"
+    )
     public Slice<ProductResponse> getProductsSlice(
             Integer limit,
             Integer offset
@@ -48,7 +53,7 @@ public class ProductService {
 
     @Cacheable(
             value = "reviews",
-            key = "#productId"
+            key = "#productId, #limit, #offset"
     )
     public Slice<ReviewResponse> getProductReviewsSlice(
             Long productId,
@@ -85,12 +90,19 @@ public class ProductService {
         return productMapper.toDTO(product);
     }
 
-    public Boolean getAvailability(Long id, int quantity) {
+    public Boolean getAvailability(List<ProductQuantityRequest> productsList) {
+        for (ProductQuantityRequest product: productsList) {
+            if (!checkingAvailability(product.getProductId(), product.getQuantity())) return false;
+        }
+        return true;
+    }
+
+    public Boolean checkingAvailability(Long id, Integer quantity) {
         log.info("checking availability of product with id: {}", id);
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Product with such id does not exist")
         );
-        return product.getStock() >= quantity;
+        return product.getStock() < quantity;
     }
 
     @CachePut(
@@ -137,12 +149,15 @@ public class ProductService {
     }
 
     @Transactional
-    public void reserveProduct(Long id, int quantity) {
-        log.info("reserving product with id: {}, with quantity {}", id, quantity);
-        Product product = productRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Product with such id does not exist")
-        );
-        product.setStock(product.getStock() - quantity);
+    public Boolean reserveProduct(List<ProductQuantityRequest> productsList) {
+        for (ProductQuantityRequest productRequest: productsList) {
+            log.info("reserving product with id: {}, with quantity {}", productRequest.getProductId(), productRequest.getQuantity());
+            Product product = productRepository.findById(productRequest.getProductId()).orElseThrow(
+                    () -> new IllegalArgumentException("Product with such id does not exist")
+            );
+            product.setStock(product.getStock() - productRequest.getQuantity());
+        }
+        return true;
     }
 
     @CacheEvict(

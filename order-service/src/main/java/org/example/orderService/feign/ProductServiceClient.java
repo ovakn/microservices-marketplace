@@ -1,25 +1,19 @@
 package org.example.orderService.feign;
 
+import org.example.orderService.DTOs.ProductQuantityRequest;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @FeignClient(
         name = "product-service",
         url = "http://product-service:8081"
 )
 public interface ProductServiceClient {
-    @GetMapping("/api/v1/products/{productId}/availability")
-    boolean isProductAvailable(
-            @PathVariable("productId") Long id,
-            @RequestParam int quantity
-    );
+    @GetMapping("/api/v1/products/availability")
+    boolean isProductAvailable(@RequestBody List<ProductQuantityRequest> productsList);
 
-    @PutMapping("api/v1/products/{productId}/reserve")
-    void reserveProduct(
-            @PathVariable("productId") Long id,
-            @RequestParam int quantity
-    );
+    @PutMapping("api/v1/products/reserve")
+    boolean reserveProduct(@RequestBody List<ProductQuantityRequest> productsList);
 }

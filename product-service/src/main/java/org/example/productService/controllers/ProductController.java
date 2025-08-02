@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/products")
@@ -108,13 +110,14 @@ public class ProductController {
             summary = "Проверка наличия продукта",
             description = "Проверяет наличие на складе"
     )
-    @GetMapping("/{id}/availability")
+    @GetMapping("/availability")
     public ResponseEntity<Boolean> isAvailable(
-            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable("id") @Min(1) Long id,
-            @Parameter(description = "Количество продуктов", required = true) @RequestParam @Min(1) int quantity
+            @Parameter(description = "Список товаров", required = true)
+            @RequestBody
+            List<ProductQuantityRequest> productsList
     ) {
         try {
-            return new ResponseEntity<>(productService.getAvailability(id, quantity), HttpStatus.OK);
+            return new ResponseEntity<>(productService.getAvailability(productsList), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -185,14 +188,14 @@ public class ProductController {
             summary = "Резервирование продукта",
             description = "Уменьшает количество товара на складе на переданное количество"
     )
-    @PutMapping("/{id}/reserve")
-    public ResponseEntity<Void> reserveProduct(
-            @Parameter(description = "Идентификатор продукта", required = true) @PathVariable(name = "id") @Min(1) Long id,
-            @Parameter @RequestParam @Min(1) int quantity
+    @PutMapping("/reserve")
+    public ResponseEntity<Boolean> reserveProduct(
+            @Parameter(description = "Список товаров", required = true)
+            @RequestBody
+            List<ProductQuantityRequest> productsList
     ) {
         try {
-            productService.reserveProduct(id, quantity);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(productService.reserveProduct(productsList), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

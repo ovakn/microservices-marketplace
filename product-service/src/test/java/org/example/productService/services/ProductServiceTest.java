@@ -1,5 +1,6 @@
 package org.example.productService.services;
 
+import org.example.productService.DTOs.ProductQuantityRequest;
 import org.example.productService.DTOs.ProductRequest;
 import org.example.productService.DTOs.ReviewRequest;
 import org.example.productService.entities.Product;
@@ -68,7 +69,7 @@ class ProductServiceTest {
     void getAvailability() {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertEquals(true, productService.getAvailability(1L, 2));
+        assertEquals(true, productService.getAvailability(List.of(new ProductQuantityRequest(1L, 2))));
         verify(productRepository, times(1)).findById(any());
     }
 
@@ -76,7 +77,8 @@ class ProductServiceTest {
     void getAvailability_throwsException() {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.getAvailability(2L, 2));
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.getAvailability(List.of(new ProductQuantityRequest(2L, 2))));
         verify(productRepository, times(1)).findById(any());
     }
 
@@ -151,18 +153,21 @@ class ProductServiceTest {
 
     @Test
     void reserveProduct() {
+        List<ProductQuantityRequest> productsList = List.of(new ProductQuantityRequest(1L, 3));
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        productService.reserveProduct(1L, 3);
+        productService.reserveProduct(productsList);
         assertEquals(47, product.getStock());
         verify(productRepository, times(1)).findById(any());
     }
 
     @Test
     void reserveProduct_throwsException() {
+        List<ProductQuantityRequest> productsList = List.of(new ProductQuantityRequest(2L, 3));
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.reserveProduct(2L, 3));
-        verify(productRepository, times(1)).findById(any());
+        assertThrows(IllegalArgumentException.class, () -> productService.reserveProduct(productsList));
+        verify(productRepository, times(0)).findById(1L);
+        verify(productRepository, times(1)).findById(2L);
     }
 }
