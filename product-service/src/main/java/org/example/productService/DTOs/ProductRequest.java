@@ -13,26 +13,17 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductRequest {
-    @Schema(
-            description = "Название продукта",
-            example = "Нож кухонный"
-    )
+    @Schema(description = "Название продукта")
     @NotNull
     String name;
-    @Schema(
-            description = "Стоимость продукта",
-            example = "1500"
-    )
+    @Schema(description = "Стоимость продукта")
     @Min(
             value = 0,
             message = "Product price must be positive"
     )
     @NotNull
     Double price;
-    @Schema(
-            description = "Количество продукта",
-            example = "15"
-    )
+    @Schema(description = "Количество продукта")
     @NotNull
     Integer stock;
 }

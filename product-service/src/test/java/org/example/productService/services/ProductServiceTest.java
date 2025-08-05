@@ -5,6 +5,7 @@ import org.example.productService.DTOs.ProductRequest;
 import org.example.productService.DTOs.ReviewRequest;
 import org.example.productService.entities.Product;
 import org.example.productService.entities.Review;
+import org.example.productService.exceptions.ProductNotExistsException;
 import org.example.productService.mappers.ProductMapper;
 import org.example.productService.mappers.ReviewMapper;
 import org.example.productService.repositories.ProductRepository;
@@ -45,7 +46,7 @@ class ProductServiceTest {
     void getProductByName_throwsException() {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findByName("test product")).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.getProductByName("some wrong product"));
+        assertThrows(ProductNotExistsException.class, () -> productService.getProductByName("some wrong product"));
         verify(productRepository, times(1)).findByName(any());
     }
 
@@ -61,7 +62,7 @@ class ProductServiceTest {
     void getProductById_throwsException() {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.getProductById(2L));
+        assertThrows(ProductNotExistsException.class, () -> productService.getProductById(2L));
         verify(productRepository, times(1)).findById(any());
     }
 
@@ -77,7 +78,7 @@ class ProductServiceTest {
     void getAvailability_throwsException() {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(ProductNotExistsException.class,
                 () -> productService.getAvailability(List.of(new ProductQuantityRequest(2L, 2))));
         verify(productRepository, times(1)).findById(any());
     }
@@ -126,7 +127,7 @@ class ProductServiceTest {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         ReviewRequest reviewRequest = new ReviewRequest(12L, 3, "test comment");
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.createReview(2L, reviewRequest));
+        assertThrows(ProductNotExistsException.class, () -> productService.createReview(2L, reviewRequest));
         verify(reviewRepository, times(0)).save(any());
         verify(reviewMapper, times(0)).toReview(any());
         verify(productRepository, times(1)).findById(any());
@@ -147,7 +148,7 @@ class ProductServiceTest {
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         ProductRequest productRequest = new ProductRequest("new product", 9.99, 15);
-        assertThrows(IllegalArgumentException.class, () -> productService.updateProduct(productRequest, 2L));
+        assertThrows(ProductNotExistsException.class, () -> productService.updateProduct(productRequest, 2L));
         verify(productRepository, times(1)).findById(any());
     }
 
@@ -166,7 +167,7 @@ class ProductServiceTest {
         List<ProductQuantityRequest> productsList = List.of(new ProductQuantityRequest(2L, 3));
         Product product = new Product(1L, "test product", 15.99, 50, null, List.of());
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        assertThrows(IllegalArgumentException.class, () -> productService.reserveProduct(productsList));
+        assertThrows(ProductNotExistsException.class, () -> productService.reserveProduct(productsList));
         verify(productRepository, times(0)).findById(1L);
         verify(productRepository, times(1)).findById(2L);
     }

@@ -3,7 +3,6 @@ package org.example.orderService.feign;
 import org.example.orderService.DTOs.ProductQuantityRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @FeignClient(

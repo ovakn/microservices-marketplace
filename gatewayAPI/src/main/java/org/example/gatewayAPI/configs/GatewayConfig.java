@@ -25,6 +25,10 @@ public class GatewayConfig {
                         )
                         .uri("http://order-service:8082")
                 )
+                .route("user-service", r -> r
+                        .path("api/v1/users/**")
+                        .uri("http://user-service:8083")
+                )
                 .build();
     }
 }

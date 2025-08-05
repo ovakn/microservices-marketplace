@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.example.productService.DTOs.*;
 import org.example.productService.entities.*;
+import org.example.productService.exceptions.ProductNotExistsException;
 import org.example.productService.mappers.*;
 import org.example.productService.repositories.*;
 import org.springframework.cache.annotation.*;
@@ -71,7 +72,7 @@ public class ProductService {
     public ProductResponse getProductByName(String name) {
         log.info("getting product with name: " + name);
         Product product = productRepository.findByName(name).orElseThrow(
-                () -> new IllegalArgumentException("Product with such name does not exist")
+                () -> new ProductNotExistsException(name)
         );
         product.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
         return productMapper.toDTO(product);
@@ -84,7 +85,7 @@ public class ProductService {
     public ProductResponse getProductById(Long id) {
         log.info("getting product with id: " + id);
         Product product = productRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Product with such id does not exist")
+                () -> new ProductNotExistsException(id)
         );
         product.setAverageRating(reviewRepository.calculateAverageRating(product.getId()));
         return productMapper.toDTO(product);
@@ -100,9 +101,9 @@ public class ProductService {
     public Boolean checkingAvailability(Long id, Integer quantity) {
         log.info("checking availability of product with id: {}", id);
         Product product = productRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Product with such id does not exist")
+                () -> new ProductNotExistsException(id)
         );
-        return product.getStock() < quantity;
+        return product.getStock() > quantity;
     }
 
     @CachePut(
@@ -122,7 +123,7 @@ public class ProductService {
     public ReviewResponse createReview(Long productId, ReviewRequest reviewRequest) {
         log.info("creating new review ({}) about a product with id {}", reviewRequest.toString(), productId);
         Product product = productRepository.findById(productId).orElseThrow(
-                () -> new IllegalArgumentException("Product with such id does not exist")
+                () -> new ProductNotExistsException(productId)
         );
         Review review = reviewMapper.toReview(reviewRequest);
         review.setProduct(product);
@@ -139,7 +140,7 @@ public class ProductService {
             Long id
     ) {
         Product oldProduct = productRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Product with such id does not exist")
+                () -> new ProductNotExistsException(id)
         );
         oldProduct.setName(product.getName());
         oldProduct.setPrice(product.getPrice());
@@ -153,7 +154,7 @@ public class ProductService {
         for (ProductQuantityRequest productRequest: productsList) {
             log.info("reserving product with id: {}, with quantity {}", productRequest.getProductId(), productRequest.getQuantity());
             Product product = productRepository.findById(productRequest.getProductId()).orElseThrow(
-                    () -> new IllegalArgumentException("Product with such id does not exist")
+                    () -> new ProductNotExistsException(productRequest.getProductId())
             );
             product.setStock(product.getStock() - productRequest.getQuantity());
         }

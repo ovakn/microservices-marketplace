@@ -21,10 +21,7 @@ public class ReviewRequest {
             message = "UserId must be positive"
     )
     Long userId;
-    @Schema(
-            description = "Рейтинг",
-            example = "5"
-    )
+    @Schema(description = "Рейтинг")
     @NotNull
     @Min(
             value = 1,

@@ -5,7 +5,10 @@ import org.example.orderService.DTOs.OrderRequest;
 import org.example.orderService.entities.Order;
 import org.example.orderService.entities.OrderItem;
 import org.example.orderService.entities.enums.OrderStatus;
+import org.example.orderService.exceptions.OrderNotExistsException;
+import org.example.orderService.exceptions.UserNotExistsException;
 import org.example.orderService.feign.ProductServiceClient;
+import org.example.orderService.feign.UserServiceClient;
 import org.example.orderService.mappers.OrderMapper;
 import org.example.orderService.repositories.OrderRepository;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,8 @@ class OrderServiceTest {
     @Mock
     private ProductServiceClient productServiceClient;
     @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
     private OrderMapper orderMapper;
 
     @Test
@@ -52,7 +57,7 @@ class OrderServiceTest {
                 new OrderItem(4L, 87L, 3, order)
         ));
         when(orderRepository.findById(2L)).thenReturn(Optional.of(order));
-        assertThrows(IllegalArgumentException.class, () -> orderService.getOrderById(1L));
+        assertThrows(OrderNotExistsException.class, () -> orderService.getOrderById(1L));
     }
 
     @Test
@@ -65,6 +70,7 @@ class OrderServiceTest {
         );
         when(productServiceClient.isProductAvailable(any())).thenReturn(true);
         when(productServiceClient.reserveProduct(any())).thenReturn(true);
+        when(userServiceClient.doesExistById(any())).thenReturn(true);
         assertEquals(orderMapper.toDTO(orderMapper.toOrder(order)), orderService.createOrder(order));
     }
 
@@ -77,7 +83,7 @@ class OrderServiceTest {
                 )
         );
         when(productServiceClient.isProductAvailable(any())).thenReturn(false);
-        assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(order));
+        assertThrows(UserNotExistsException.class, () -> orderService.createOrder(order));
     }
 
     @Test

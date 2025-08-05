@@ -40,11 +40,7 @@ public class OrderController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(orderService.getOrderById(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(orderService.getOrderById(id), HttpStatus.OK);
     }
 
     @Operation(
@@ -53,11 +49,7 @@ public class OrderController {
     )
     @PostMapping("/create")
     public ResponseEntity<OrderResponse> createOrder(@Validated @RequestBody OrderRequest orderRequest) {
-        try {
-            return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.CREATED);
     }
 
     @Operation(
@@ -71,11 +63,7 @@ public class OrderController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(orderService.payOrder(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(orderService.payOrder(id), HttpStatus.OK);
     }
 
     @Operation(
@@ -89,11 +77,7 @@ public class OrderController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(orderService.shipOrder(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(orderService.shipOrder(id), HttpStatus.OK);
     }
 
     @Operation(
@@ -107,11 +91,7 @@ public class OrderController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(orderService.deliverOrder(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(orderService.deliverOrder(id), HttpStatus.OK);
     }
 
     @Operation(
@@ -125,10 +105,6 @@ public class OrderController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(orderService.cancelOrder(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(orderService.cancelOrder(id), HttpStatus.OK);
     }
 }

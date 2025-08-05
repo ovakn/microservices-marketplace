@@ -19,10 +19,7 @@ public class OrderItemRequest {
     )
     @NotNull
     Long productId;
-    @Schema(
-            description = "Количество единиц продукта",
-            example = "3"
-    )
+    @Schema(description = "Количество единиц продукта")
     @Min(
             value = 1,
             message = "You can't order less 1 product"

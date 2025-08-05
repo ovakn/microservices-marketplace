@@ -7,7 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.orderService.DTOs.*;
 import org.example.orderService.entities.*;
 import org.example.orderService.entities.enums.OrderStatus;
+import org.example.orderService.exceptions.OrderNotExistsException;
+import org.example.orderService.exceptions.ProductNotAvailableException;
+import org.example.orderService.exceptions.UserNotExistsException;
 import org.example.orderService.feign.ProductServiceClient;
+import org.example.orderService.feign.UserServiceClient;
 import org.example.orderService.mappers.OrderMapper;
 import org.example.orderService.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
@@ -24,18 +28,22 @@ import java.util.List;
 public class OrderService {
     OrderRepository orderRepository;
     ProductServiceClient productServiceClient;
+    UserServiceClient userServiceClient;
     OrderMapper orderMapper;
 
     public OrderResponse getOrderById(Long id) {
         log.info("getting order with id: {}", id);
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Order with such id does not exist")
+                () -> new OrderNotExistsException(id)
         );
         return orderMapper.toDTO(order);
     }
 
     @Transactional
     public OrderResponse createOrder(OrderRequest orderRequest) {
+        if (!userServiceClient.doesExistById(orderRequest.getUserId())) {
+            throw new UserNotExistsException(orderRequest.getUserId());
+        }
         log.info("saving new order: " + orderRequest.toString());
         reservingProducts(orderRequest.getItems());
         Order order = orderMapper.toOrder(orderRequest);
@@ -47,7 +55,7 @@ public class OrderService {
     public OrderResponse payOrder(Long id) {
         log.info("paying for the order wth id {}", id);
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Order with such id does not exist")
+                () -> new OrderNotExistsException(id)
         );
         order.setStatus(OrderStatus.PAID);
         return orderMapper.toDTO(order);
@@ -57,7 +65,7 @@ public class OrderService {
     public OrderResponse shipOrder(Long id) {
         log.info("shipping the order wth id {}", id);
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Order with such id does not exist")
+                () -> new OrderNotExistsException(id)
         );
         order.setStatus(OrderStatus.SHIPPED);
         return orderMapper.toDTO(order);
@@ -67,7 +75,7 @@ public class OrderService {
     public OrderResponse deliverOrder(Long id) {
         log.info("delivering the order wth id {}", id);
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Order with such id does not exist")
+                () -> new OrderNotExistsException(id)
         );
         order.setStatus(OrderStatus.DELIVERED);
         return orderMapper.toDTO(order);
@@ -77,7 +85,7 @@ public class OrderService {
     public OrderResponse cancelOrder(Long id) {
         log.info("cancelling the order wth id {}", id);
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Order with such id does not exist")
+                () -> new OrderNotExistsException(id)
         );
         order.setStatus(OrderStatus.CANCELLED);
         return orderMapper.toDTO(order);
@@ -88,10 +96,10 @@ public class OrderService {
                 .stream()
                 .map(item -> new ProductQuantityRequest(item.getProductId(), item.getQuantity())).toList();
         if (!productServiceClient.isProductAvailable(productsList)) {
-            throw new IllegalArgumentException("Error. Some of products isn't available");
+            throw new ProductNotAvailableException();
         }
         if (!productServiceClient.reserveProduct(productsList)) {
-            throw new IllegalArgumentException("Error. Some of products isn't available");
+            throw new ProductNotAvailableException();
         }
     }
 }

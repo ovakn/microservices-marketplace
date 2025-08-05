@@ -9,5 +9,5 @@ RUN ./mvnw clean install
 FROM eclipse-temurin:22-jre
 WORKDIR /app
 COPY --from=builder /app/target/*.jar /app/orderServiceApplication.jar
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "orderServiceApplication.jar"]

@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -84,11 +83,7 @@ public class ProductController {
             @Min(1)
             Long id
     ) {
-        try {
-            return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
     }
 
     @Operation(
@@ -99,11 +94,7 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductByName(
             @Parameter(description = "Название продукта", required = true) @PathVariable("name") String name
     ) {
-        try {
-            return new ResponseEntity<>(productService.getProductByName(name), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(productService.getProductByName(name), HttpStatus.OK);
     }
 
     @Operation(
@@ -116,11 +107,7 @@ public class ProductController {
             @RequestBody
             List<ProductQuantityRequest> productsList
     ) {
-        try {
-            return new ResponseEntity<>(productService.getAvailability(productsList), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(productService.getAvailability(productsList), HttpStatus.OK);
     }
 
     @Operation(
@@ -134,11 +121,7 @@ public class ProductController {
             @RequestBody
             ProductRequest product
     ) {
-        try {
-            return new ResponseEntity<>(productService.createProduct(product), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(productService.createProduct(product), HttpStatus.CREATED);
     }
 
     @Operation(
@@ -155,11 +138,7 @@ public class ProductController {
             @RequestBody
             ReviewRequest reviewRequest
     ) {
-        try {
-            return new ResponseEntity<>(productService.createReview(productId, reviewRequest), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(productService.createReview(productId, reviewRequest), HttpStatus.CREATED);
     }
 
     @Operation(
@@ -177,11 +156,7 @@ public class ProductController {
             @RequestBody
             ProductRequest product
     ) {
-        try {
-            return new ResponseEntity<>(productService.updateProduct(product, id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(productService.updateProduct(product, id), HttpStatus.OK);
     }
 
     @Operation(
@@ -194,11 +169,7 @@ public class ProductController {
             @RequestBody
             List<ProductQuantityRequest> productsList
     ) {
-        try {
-            return new ResponseEntity<>(productService.reserveProduct(productsList), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(productService.reserveProduct(productsList), HttpStatus.OK);
     }
 
     @Operation(
